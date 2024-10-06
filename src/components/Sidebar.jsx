@@ -4,15 +4,17 @@ import { BiSolidInstitution, BiSpreadsheet } from "react-icons/bi";
 import { AiOutlineDollar } from "react-icons/ai";
 import profilepicture from "../assets/profilepicture.jpg";
 
-const Sidebar = () => {
-    const [isOpen, setIsOpen] = useState(false);
+const Sidebar = ({ onToggle }) => {
+    const [isOpen, setIsOpen] = useState(true);
 
     const toggleSidebar = () => {
-        setIsOpen(!isOpen);
+        const newIsOpen = !isOpen;
+        setIsOpen(newIsOpen);
+        onToggle(newIsOpen); // Comunica a mudança para o Layout
     };
 
     return (
-        <div className={`sidebar fixed top-0 left-0 h-full ${isOpen ? 'w-45 md:w-60' : 'w-14'} bg-cor-tema1 p-4 transition-all duration-500`}>
+        <div className={`sidebar fixed top-0 left-0 h-full ${isOpen ? 'w-45 md:w-60' : 'w-14'} bg-cor-tema1 p-4 transition-all duration-500 ease-in-out`}>
             {/* Logo e botão de abrir/fechar */}
             <div className="logo_content flex items-center">
                 <div onClick={isOpen ? null : toggleSidebar} className="cursor-pointer">
@@ -67,7 +69,7 @@ const Sidebar = () => {
             <div className="profile_content absolute bottom-0 left-0 w-full p-4 bg-cor-tema-claro">
                 <div className="profile flex items-center">
                     <img src={profilepicture} alt="Profile" className="h-10 w-10 rounded-full object-cover" />
-                    <div className={`ml-4 hidden md:inline ${isOpen ? '' : 'hidden'}`}>
+                    <div className={`ml-4 hidden ${isOpen ? 'md:inline' : 'hidden'}`}>
                         <div className="usuario text-white">Nome Usuário</div>
                         <div className="cargo text-white text-sm">Cargo Usuário</div>
                     </div>
