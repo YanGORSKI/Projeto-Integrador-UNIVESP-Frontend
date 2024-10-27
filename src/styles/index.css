@@ -7,6 +7,15 @@
   @apply fixed top-0 left-0 h-full w-16 lg:w-56 bg-cor-tema1 transition-all duration-500 ease-in-out;
 }
 
+/* Margens para a div que envolve Topbar e MainScreen */
+.contentWrapper-open {
+  @apply ml-45 md:ml-60; /* Margem quando a sidebar está aberta */
+}
+
+.contentWrapper-closed {
+  @apply ml-14; /* Margem mínima para a sidebar fechada */
+}
+
 .logo_content {
   @apply flex items-center flex md:justify-evenly h-16 text-white;
 }

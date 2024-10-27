@@ -18,6 +18,9 @@ module.exports = {
       fontFamily: {
         sans: ['Lato', ...defaultTheme.fontFamily.sans],
       },
+      margin: {
+        '45': '156px',
+      },
       boxShadow:{
         myShadow1: "4.1px -5px 0 0  rgb(241 245 249)",
         myShadow2: "-4.1px -5px 0 0  rgb(241 245 249)",
