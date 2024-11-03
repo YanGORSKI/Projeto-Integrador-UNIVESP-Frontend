@@ -5,6 +5,7 @@ import Layout from "./components/Layout/Layout";
 import Home from "./pages/Home";
 import Financeiro from "./pages/Financeiro/Financeiro";
 import FluxoCaixaDemonstrativo from "./pages/Financeiro/FluxoCaixa/Demonstrativo";
+import FluxoCaixaLancamentos from "./pages/Financeiro/FluxoCaixa/Lancamentos";
 
 function App() {
     return (
@@ -15,6 +16,7 @@ function App() {
                     <Route path="/home" element={<Home />} />
                     <Route path="/financeiro" element={<Financeiro />} />
                     <Route path="/financeiro/fluxo-caixa/demonstrativo" element={<FluxoCaixaDemonstrativo />} />
+                    <Route path="/financeiro/fluxo-caixa/lancamentos" element={<FluxoCaixaLancamentos />} />
                 </Routes>
             </Layout>
         </Router>
