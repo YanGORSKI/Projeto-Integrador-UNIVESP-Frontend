@@ -51,7 +51,7 @@ const Demonstrativo = () => {
         // Código de requisição para o backend comentado até o backend estar pronto
         /*
         try {
-            const response = await axios.get(`[url_do_backend]/financeiro/demonstrativo`, {
+            const response = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/financeiro/demonstrativo`, {
                 params: { mesAno: `${mes}/${ano}` }
             });
             const dados = response.data;

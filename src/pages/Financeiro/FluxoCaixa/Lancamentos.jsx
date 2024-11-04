@@ -1,8 +1,17 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 // src/pages/Lancamentos.jsx
 import React, { useState, useEffect, useCallback } from 'react';
 import TabelaLista from '../../../components/Other/Tables/TabelaLista';
 import dayjs from 'dayjs';
-// import axios from 'axios';
+import axios from 'axios';
+
+const REACT_APP_BACKEND_URL = 'http://localhost:8080'
+
+const instance = axios.create({
+    baseURL: REACT_APP_BACKEND_URL,
+    timeout: 1000,
+    headers: {'X-Custom-Header': 'foobar'}
+  });
 
 const Lancamentos = () => {
     const [filters, setFilters] = useState({
@@ -100,10 +109,18 @@ const Lancamentos = () => {
     };
 
     const carregarLancamentos = useCallback(async () => {
-        // Código de requisição para o backend comentado até o backend estar pronto
-        /*
+        console.log("tipo: " + filters.tipo,
+                    "dataInicio: " + filters.dataInicio,
+                    "dataFim: " + filters.dataFim,
+                    "conta: " + filters.conta,
+                    "categoria: " + filters.categoria,
+                    "parcelas: " + filters.parcelas,
+                    "valor: " + filters.valor,
+                    "descricao: " + filters.descricao,
+                    "exibirPorPagina: " + filters.exibirPorPagina);
+        
         try {
-            const response = await axios.get(`[url_backend]/financeiro/lancamentos`, {
+            const response = await instance.get(`/financeiro/lancamentos`, {
                 params: {
                     tipo: filters.tipo,
                     dataInicio: filters.dataInicio,
@@ -120,21 +137,22 @@ const Lancamentos = () => {
             setLancamentos(dados);
         } catch (error) {
             console.error('Erro ao carregar dados dos lançamentos:', error);
-        }
-        */
-
-        // Utilizando dados de exemplo
-        const lancamentosPlaceholder = [
-            { id: 1, tipo: 1, data: '2024-01-01', valor: 100, conta: 'Conta 1', parcelas: null, categoria: 'Categoria 1', descricao: 'Descrição 1' },
-            { id: 2, tipo: 0, data: '2024-01-02', valor: 200, conta: 'Conta 2', parcelas: null, categoria: 'Categoria 2', descricao: 'Descrição 2' },
-        ];
-
-        setLancamentos(lancamentosPlaceholder);
-    }, []);
+        }     
+    }, [filters]);
 
     useEffect(() => {
+        const today = dayjs();
+        const startOfMonth = today.startOf('month').format('YYYY-MM-DD');
+        const endOfMonth = today.endOf('month').format('YYYY-MM-DD');
+
+        setFilters((prevFilters) => ({
+            ...prevFilters,
+            dataInicio: startOfMonth,
+            dataFim: endOfMonth,
+        }));
+
         carregarLancamentos();
-    }, [carregarLancamentos]);
+    }, []); // O useEffect executará uma vez na montagem do componente
 
     const handleToggleFilters = () => {
         setShowFilters(!showFilters);
@@ -142,9 +160,8 @@ const Lancamentos = () => {
 
     const handleSaveLancamento = async () => {
         // Código de requisição para o backend comentado até o backend estar pronto
-        /*
         try {
-            const response = await axios.post(`[url_backend]/financeiro/lancamentos`, newLancamento);
+            const response = await axios.post(`/financeiro/lancamentos`, newLancamento);
             console.log('Lançamento salvo com sucesso:', response.data);
             // Recarregar lançamentos após salvar
             carregarLancamentos();
@@ -161,7 +178,6 @@ const Lancamentos = () => {
         } catch (error) {
             console.error('Erro ao salvar lançamento:', error);
         }
-        */
         console.log('Salvar lançamento:', newLancamento);
     };
 
