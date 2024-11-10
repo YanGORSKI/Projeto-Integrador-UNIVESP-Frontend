@@ -1,17 +1,18 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 // src/pages/Lancamentos.jsx
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import TabelaLista from '../../../components/Other/Tables/TabelaLista';
 import dayjs from 'dayjs';
 import axios from 'axios';
 
 const REACT_APP_BACKEND_URL = 'http://localhost:8080'
+const URL_FINANC_LANCAMENTOS = '/financeiro/lancamentos'
 
 const instance = axios.create({
     baseURL: REACT_APP_BACKEND_URL,
     timeout: 1000,
     headers: {'X-Custom-Header': 'foobar'}
-  });
+});
 
 const Lancamentos = () => {
     const [filters, setFilters] = useState({
@@ -27,7 +28,10 @@ const Lancamentos = () => {
     });
 
     const [lancamentos, setLancamentos] = useState([]);
+    const [categorias, setCategorias] = useState([]);
+    const [contas, setContas] = useState([]);
     const [showFilters, setShowFilters] = useState(false);
+    
     const [newLancamento, setNewLancamento] = useState({
         tipo: '',
         data: dayjs().format('YYYY-MM-DD'),
@@ -108,19 +112,18 @@ const Lancamentos = () => {
         return tipo === 1 ? 'Entrada' : 'Saída';
     };
 
-    const carregarLancamentos = useCallback(async () => {
-        console.log("tipo: " + filters.tipo,
-                    "dataInicio: " + filters.dataInicio,
-                    "dataFim: " + filters.dataFim,
-                    "conta: " + filters.conta,
-                    "categoria: " + filters.categoria,
-                    "parcelas: " + filters.parcelas,
-                    "valor: " + filters.valor,
-                    "descricao: " + filters.descricao,
-                    "exibirPorPagina: " + filters.exibirPorPagina);
-        
+    const carregarLancamentos = async () => {
+        // console.log("tipo: " + filters.tipo,
+        //             "dataInicio: " + filters.dataInicio,
+        //             "dataFim: " + filters.dataFim,
+        //             "conta: " + filters.conta,
+        //             "categoria: " + filters.categoria,
+        //             "parcelas: " + filters.parcelas,
+        //             "valor: " + filters.valor,
+        //             "descricao: " + filters.descricao,
+        //             "exibirPorPagina: " + filters.exibirPorPagina);
         try {
-            const response = await instance.get(`/financeiro/lancamentos`, {
+            const response = await instance.get(URL_FINANC_LANCAMENTOS, {
                 params: {
                     tipo: filters.tipo,
                     dataInicio: filters.dataInicio,
@@ -133,12 +136,30 @@ const Lancamentos = () => {
                     exibirPorPagina: filters.exibirPorPagina,
                 },
             });
-            const dados = response.data.lancamentos;
-            setLancamentos(dados);
+            // console.log("response.data:", JSON.stringify(response.data, null, 2));
+            setLancamentos(response.data);
         } catch (error) {
             console.error('Erro ao carregar dados dos lançamentos:', error);
         }     
-    }, [filters]);
+    };
+
+    const carregarCategorias = async () => {
+        try {
+            const response = await instance.get('/financeiro/categorias');
+            setCategorias(response.data);
+        } catch (error) {
+            console.error('Erro ao carregar categorias:', error);
+        }
+    };
+
+    const carregarContas = async () => {
+        try {
+            const response = await instance.get('/financeiro/contas');
+            setContas(response.data);
+        } catch (error) {
+            console.error('Erro ao carregar contas:', error);
+        }
+    };
 
     useEffect(() => {
         const today = dayjs();
@@ -152,20 +173,33 @@ const Lancamentos = () => {
         }));
 
         carregarLancamentos();
-    }, []); // O useEffect executará uma vez na montagem do componente
+        carregarCategorias();
+        carregarContas();
+    }, []);
 
     const handleToggleFilters = () => {
         setShowFilters(!showFilters);
     };
 
     const handleSaveLancamento = async () => {
-        // Código de requisição para o backend comentado até o backend estar pronto
+        const lancamentoParaEnvio = {
+            tipo: parseInt(newLancamento.tipo),  // Converte para Integer
+            data: newLancamento.data,            // Formato de data em string (backend deve aceitar como LocalDate)
+            valor: parseFloat(newLancamento.valor), // Converte para BigDecimal
+            contaId: parseInt(newLancamento.conta), // Envia apenas o ID da conta
+            parcelas: parseInt(newLancamento.parcelas), // Converte para Integer
+            categoriaId: parseInt(newLancamento.categoria), // Envia apenas o ID da categoria
+            descricao: newLancamento.descricao,
+        };
+
+        // console.log('Lançamentos para Envio:', lancamentoParaEnvio);
+
         try {
-            const response = await axios.post(`/financeiro/lancamentos`, newLancamento);
+            const response = await instance.post(URL_FINANC_LANCAMENTOS, lancamentoParaEnvio);
             console.log('Lançamento salvo com sucesso:', response.data);
-            // Recarregar lançamentos após salvar
+            
+            // Recarrega lançamentos e limpa os campos do novo lançamento
             carregarLancamentos();
-            // Limpar campos do novo lançamento
             setNewLancamento({
                 tipo: '',
                 data: dayjs().format('YYYY-MM-DD'),
@@ -188,7 +222,10 @@ const Lancamentos = () => {
         tipo: formatTipo(lancamento.tipo),
         data: formatData(lancamento.data),
         valor: formatCurrency(lancamento.valor),
+        descricao: lancamento.descricao,
     }));
+
+    // console.log("Dados formatados antes da renderização na tabela:", dadosFormatados);
 
     return (
         <div className="p-5">
@@ -219,15 +256,17 @@ const Lancamentos = () => {
                                     <option value="1">Entrada</option>
                                     <option value="0">Saída</option>
                                 </select>
-                                <select name="conta" value={filters.conta} onChange={handleFilterChange} className="p-2 border border-gray-300 rounded">
+                                <select name="conta" value={newLancamento.conta} onChange={handleNewLancamentoChange} className="p-2 border border-gray-300 rounded">
                                     <option value="">Conta</option>
-                                    <option value="conta1">Conta 1</option>
-                                    <option value="conta2">Conta 2</option>
+                                    {contas.map((conta) => (
+                                        <option key={conta.idConta} value={conta.idConta}>{conta.descricao}</option>
+                                    ))}
                                 </select>
-                                <select name="categoria" value={filters.categoria} onChange={handleFilterChange} className="p-2 border border-gray-300 rounded">
+                                <select name="categoria" value={newLancamento.categoria} onChange={handleNewLancamentoChange} className="p-2 border border-gray-300 rounded">
                                     <option value="">Categoria</option>
-                                    <option value="categoria1">Categoria 1</option>
-                                    <option value="categoria2">Categoria 2</option>
+                                    {categorias.map((categoria) => (
+                                        <option key={categoria.idCategoria} value={categoria.idCategoria}>{categoria.descricao}</option>
+                                    ))}
                                 </select>
                                 <select name="parcelas" value={filters.parcelas} onChange={handleFilterChange} className="p-2 border border-gray-300 rounded">
                                     <option value="">Parcelas</option>
@@ -263,14 +302,16 @@ const Lancamentos = () => {
                         <input type="text" name="valor" value={newLancamento.valor} placeholder="Valor" onChange={handleNewLancamentoChange} className="p-2 border border-gray-300 rounded" />
                         <select name="conta" value={newLancamento.conta} onChange={handleNewLancamentoChange} className="p-2 border border-gray-300 rounded">
                             <option value="">Conta</option>
-                            <option value="conta1">Conta 1</option>
-                            <option value="conta2">Conta 2</option>
+                            {contas.map((conta) => (
+                                <option key={conta.idConta} value={conta.idConta}>{conta.descricao}</option>
+                            ))}
                         </select>
                         <input type="text" name="parcelas" value={newLancamento.parcelas} placeholder="Parcelas" onChange={handleNewLancamentoChange} className="p-2 border border-gray-300 rounded" />
                         <select name="categoria" value={newLancamento.categoria} onChange={handleNewLancamentoChange} className="p-2 border border-gray-300 rounded">
                             <option value="">Categoria</option>
-                            <option value="categoria1">Categoria 1</option>
-                            <option value="categoria2">Categoria 2</option>
+                            {categorias.map((categoria) => (
+                                <option key={categoria.idCategoria} value={categoria.idCategoria}>{categoria.descricao}</option>
+                            ))}
                         </select>
                         <input type="text" name="descricao" value={newLancamento.descricao} placeholder="Descrição" onChange={handleNewLancamentoChange} className="p-2 border border-gray-300 rounded" />
                         <button onClick={handleSaveLancamento} className="ml-2 px-4 py-2 bg-cor-tema1 text-white rounded">
@@ -279,7 +320,12 @@ const Lancamentos = () => {
                     </div>
                 </div>
             </div>
-            <TabelaLista colunas={colunas} dados={dadosFormatados} />
+            <TabelaLista 
+                colunas={colunas} 
+                dados={dadosFormatados} 
+                urlBase={URL_FINANC_LANCAMENTOS}
+                onDeleteSuccess={carregarLancamentos}
+            />
         </div>
     );
 };

@@ -1,16 +1,23 @@
+/* eslint-disable no-unused-vars */
 /* eslint-disable react-hooks/exhaustive-deps */
-// src/pages/Financeiro/Demonstrativo.jsx
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect } from "react";
 import { Pie } from "react-chartjs-2";
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
+import axios from "axios"; // Importação do axios
 import { formatCurrency } from "../../../utils/Utils"; // Importando a função de utilidade
-// import axios from "axios";
 
-// Registrando elementos necessários para o gráfico de Pie
+const REACT_APP_BACKEND_URL = 'http://localhost:8080';
+const URL_FINANC_DEMONSTRATIVO = '/financeiro/demonstrativo';
+
 ChartJS.register(ArcElement, Tooltip, Legend);
 
+const instance = axios.create({
+    baseURL: REACT_APP_BACKEND_URL,
+    timeout: 1000,
+    headers: { "X-Custom-Header": "foobar" }
+});
+
 const Demonstrativo = () => {
-    // Estados para armazenar os dados de entradas, saídas e saldo
     const [entradas, setEntradas] = useState([]);
     const [saidas, setSaidas] = useState([]);
     const [saldoAtual, setSaldoAtual] = useState(0);
@@ -21,90 +28,76 @@ const Demonstrativo = () => {
     const [totalEntradaAtual, setTotalEntradaAtual] = useState(0);
     const [totalSaidaAtual, setTotalSaidaAtual] = useState(0);
 
-    // Estados para selecionar o mês e o ano
-    const [mesSelecionado, setMesSelecionado] = useState(new Date().getMonth() + 1); // Mês atual
-    const [anoSelecionado, setAnoSelecionado] = useState(new Date().getFullYear()); // Ano atual
+    const [dataEntradas, setDataEntradas] = useState({
+        labels: [],
+        datasets: [{ data: [], backgroundColor: [] }]
+    });
+    const [dataSaidas, setDataSaidas] = useState({
+        labels: [],
+        datasets: [{ data: [], backgroundColor: [] }]
+    });
 
-    // JSON placeholder para dados iniciais
-    const dadosPlaceholder = {
-        entradas: [
-            { categoria: "Doações", valor: 5500, cor: "#4caf50" },
-            { categoria: "Patrocínios", valor: 3000, cor: "#2196f3" },
-            { categoria: "Vendas", valor: 1500, cor: "#ff9800" }
-        ],
-        saidas: [
-            { categoria: "Folha de Pagamento", valor: 4000, cor: "#f44336" },
-            { categoria: "Infraestrutura", valor: 3500, cor: "#ffeb3b" },
-            { categoria: "Projetos", valor: 2500, cor: "#9c27b0" }
-        ],
-        mesAnteriorEntrada: 9000,
-        percentualEntrada: 10,
-        mesAnteriorSaida: 8000,
-        percentualSaida: 15,
-        saldoTotal: 20000,
-        totalEntradaAtual: 10000, // Total atual de entradas do mês
-        totalSaidaAtual: 8000      // Total atual de saídas do mês
-    };
+    const [mesSelecionado, setMesSelecionado] = useState(new Date().getMonth() + 1);
+    const [anoSelecionado, setAnoSelecionado] = useState(new Date().getFullYear());
 
-    // Função para carregar dados do backend (simulada com placeholder)
-    const carregarDados = useCallback(async (mes, ano) => {
-        // Código de requisição para o backend comentado até o backend estar pronto
-        /*
+    const carregarDados = async (mes, ano) => {
         try {
-            const response = await axios.get(`${process.env.REACT_APP_BACKEND_URL}/financeiro/demonstrativo`, {
-                params: { mesAno: `${mes}/${ano}` }
+            const response = await instance.get(URL_FINANC_DEMONSTRATIVO, {
+                params: { mes, ano }
             });
+    
             const dados = response.data;
-            setEntradas(dados.entrada);
-            setSaidas(dados.saida);
-            setSaldoAtual(dados.saldoTotal);
-            setMesAnteriorEntrada(dados.mesAnteriorEntrada);
-            setPercentualEntrada(dados.mesAnteriorPorcenagemEntrada);
-            setMesAnteriorSaida(dados.mesAnteriorSaida);
-            setPercentualSaida(dados.mesAnteriorPorcenagemSaida);
-            setTotalEntradaAtual(dados.totalEntradaAtual); // Nova adição
-            setTotalSaidaAtual(dados.totalSaidaAtual); // Nova adição
+    
+            console.log("response.data:", JSON.stringify(response.data, null, 2));
+    
+            const novasEntradas = dados.entradas || [];
+            const novasSaidas = dados.saidas || [];
+    
+            setEntradas(novasEntradas);
+            setSaidas(novasSaidas);
+            setSaldoAtual(dados.saldoTotal ?? 0);
+            setMesAnteriorEntrada(dados.entradasMesAnterior ?? 0);
+            setPercentualEntrada(dados.percentualEntrada ?? 0);
+            setMesAnteriorSaida(dados.saidasMesAnterior ?? 0);
+            setPercentualSaida(dados.percentualSaida ?? 0);
+            setTotalEntradaAtual(dados.totalEntradaAtual ?? 0);
+            setTotalSaidaAtual(dados.totalSaidaAtual ?? 0);
+    
+            // Atualizando os dados dos gráficos após os dados serem carregados
+            setDataEntradas({
+                labels: [...novasEntradas.map(e => e.categoria)],
+                datasets: [
+                    {
+                        data: [...novasEntradas.map(e => e.total)],
+                        backgroundColor: [...novasEntradas.map(e => e.cor)]
+                    }
+                ]
+            });
+            
+            setDataSaidas({
+                labels: [...novasSaidas.map(s => s.categoria)],
+                datasets: [
+                    {
+                        data: [...novasSaidas.map(s => s.total)],
+                        backgroundColor: [...novasSaidas.map(s => s.cor)]
+                    }
+                ]
+            });
         } catch (error) {
             console.error("Erro ao carregar dados do demonstrativo:", error);
         }
-        */
+    };
 
-        // Utilizando dados de exemplo
-        setEntradas(dadosPlaceholder.entradas);
-        setSaidas(dadosPlaceholder.saidas);
-        setSaldoAtual(dadosPlaceholder.saldoTotal);
-        setMesAnteriorEntrada(dadosPlaceholder.mesAnteriorEntrada);
-        setPercentualEntrada(dadosPlaceholder.percentualEntrada);
-        setMesAnteriorSaida(dadosPlaceholder.mesAnteriorSaida);
-        setPercentualSaida(dadosPlaceholder.percentualSaida);
-        setTotalEntradaAtual(dadosPlaceholder.totalEntradaAtual); // Nova adição
-        setTotalSaidaAtual(dadosPlaceholder.totalSaidaAtual); // Nova adição
-    }, []);
-
-    // Carregar dados para o mês atual ao iniciar a página
+    // Carregar dados apenas uma vez ao montar a página, para o mês atual e ano atual
     useEffect(() => {
         carregarDados(mesSelecionado, anoSelecionado);
-    }, [mesSelecionado, anoSelecionado, carregarDados]);
+    }, []); // Executa apenas na montagem do componente
 
-    // Configuração para os gráficos de entradas e saídas
-    const dataEntradas = {
-        labels: entradas.map(e => e.categoria),
-        datasets: [
-            {
-                data: entradas.map(e => e.valor),
-                backgroundColor: entradas.map(e => e.cor) // Cores customizáveis
-            }
-        ]
+    const handleAplicar = () => {
+        // Carrega dados com os filtros de mês e ano selecionados
+        carregarDados(mesSelecionado, anoSelecionado);
     };
-    const dataSaidas = {
-        labels: saidas.map(s => s.categoria),
-        datasets: [
-            {
-                data: saidas.map(s => s.valor),
-                backgroundColor: saidas.map(s => s.cor) // Cores customizáveis
-            }
-        ]
-    };
+
     const options = {
         responsive: true,
         plugins: {
@@ -116,21 +109,15 @@ const Demonstrativo = () => {
                     label: function(context) {
                         let label = context.label || "";
                         let value = context.raw || 0;
-                        return `${label}: ${formatCurrency(value)}`; // Usando a formatação
+                        return `${label}: ${formatCurrency(value)}`;
                     }
                 }
             }
         }
     };
 
-    // Função para aplicar a seleção de mês/ano
-    const handleAplicar = () => {
-        carregarDados(mesSelecionado, anoSelecionado);
-    };
-
     return (
         <div className="p-6 gap-4">
-            {/* Dropdowns para selecionar mês e ano */}
             <div className="flex gap-4 mb-6">
                 <select
                     value={mesSelecionado}
@@ -158,18 +145,15 @@ const Demonstrativo = () => {
                     Aplicar
                 </button>
             </div>
-            {/* Exibição do saldo atual formatado */}
             <div className="text-center bg-white rounded-lg shadow-md p-4">
                 <h2 className="text-xl font-semibold">Saldo Atual</h2>
                 <p className="text-2xl font-bold">{formatCurrency(saldoAtual)}</p>
             </div>
-
-           {/* Gráficos de entradas e saídas */}
             <div className="flex justify-evenly mt-4 flex-wrap md:flex-nowrap gap-4 mb-8">
                 <div className="bg-white rounded-lg shadow-md p-4 w-full md:w-1/2 max-w-md text-center">
                     <h2 className="text-xl font-semibold mb-2">Entradas - Total Atual: {formatCurrency(totalEntradaAtual)}</h2>
                     <div className="w-full max-h-96 flex justify-center items-center">
-                        <Pie data={dataEntradas} options={options} />
+                        <Pie key={dataEntradas.datasets[0].data} data={dataEntradas} options={options} />
                     </div>
                     <p className="mt-2">Total do mês anterior: {formatCurrency(mesAnteriorEntrada)}</p>
                     <p className="mt-2">Comparação com o mês anterior: {percentualEntrada}%</p>
@@ -177,7 +161,7 @@ const Demonstrativo = () => {
                 <div className="bg-white rounded-lg shadow-md p-4 w-full md:w-1/2 max-w-md text-center">
                     <h2 className="text-xl font-semibold mb-2">Saídas - Total Atual: {formatCurrency(totalSaidaAtual)}</h2>
                     <div className="w-full max-h-96 flex justify-center items-center">
-                        <Pie data={dataSaidas} options={options} />
+                        <Pie key={dataSaidas.datasets[0].data} data={dataSaidas} options={options} />
                     </div>
                     <p className="mt-2">Total do mês anterior: {formatCurrency(mesAnteriorSaida)}</p>
                     <p className="mt-2">Comparação com o mês anterior: {percentualSaida}%</p>
