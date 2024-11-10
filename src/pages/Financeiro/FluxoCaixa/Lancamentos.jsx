@@ -113,15 +113,15 @@ const Lancamentos = () => {
     };
 
     const carregarLancamentos = async () => {
-        // console.log("tipo: " + filters.tipo,
-        //             "dataInicio: " + filters.dataInicio,
-        //             "dataFim: " + filters.dataFim,
-        //             "conta: " + filters.conta,
-        //             "categoria: " + filters.categoria,
-        //             "parcelas: " + filters.parcelas,
-        //             "valor: " + filters.valor,
-        //             "descricao: " + filters.descricao,
-        //             "exibirPorPagina: " + filters.exibirPorPagina);
+        console.log("tipo: " + filters.tipo,
+                    "dataInicio: " + filters.dataInicio,
+                    "dataFim: " + filters.dataFim,
+                    "conta: " + filters.conta,
+                    "categoria: " + filters.categoria,
+                    "parcelas: " + filters.parcelas,
+                    "valor: " + filters.valor,
+                    "descricao: " + filters.descricao,
+                    "exibirPorPagina: " + filters.exibirPorPagina);
         try {
             const response = await instance.get(URL_FINANC_LANCAMENTOS, {
                 params: {
@@ -254,15 +254,15 @@ const Lancamentos = () => {
                                 <select name="tipo" value={filters.tipo} onChange={handleFilterChange} className="p-2 border border-gray-300 rounded">
                                     <option value="">Tipo</option>
                                     <option value="1">Entrada</option>
-                                    <option value="0">Saída</option>
+                                    <option value="2">Saída</option>
                                 </select>
-                                <select name="conta" value={newLancamento.conta} onChange={handleNewLancamentoChange} className="p-2 border border-gray-300 rounded">
+                                <select name="conta" value={filters.conta} onChange={handleFilterChange} className="p-2 border border-gray-300 rounded">
                                     <option value="">Conta</option>
                                     {contas.map((conta) => (
                                         <option key={conta.idConta} value={conta.idConta}>{conta.descricao}</option>
                                     ))}
                                 </select>
-                                <select name="categoria" value={newLancamento.categoria} onChange={handleNewLancamentoChange} className="p-2 border border-gray-300 rounded">
+                                <select name="categoria" value={filters.categoria} onChange={handleFilterChange} className="p-2 border border-gray-300 rounded">
                                     <option value="">Categoria</option>
                                     {categorias.map((categoria) => (
                                         <option key={categoria.idCategoria} value={categoria.idCategoria}>{categoria.descricao}</option>
@@ -296,7 +296,7 @@ const Lancamentos = () => {
                         <select name="tipo" value={newLancamento.tipo} onChange={handleNewLancamentoChange} className="p-2 border border-gray-300 rounded">
                             <option value="">Tipo</option>
                             <option value="1">Entrada</option>
-                            <option value="0">Saída</option>
+                            <option value="2">Saída</option>
                         </select>
                         <input type="date" name="data" value={newLancamento.data} onChange={handleNewLancamentoChange} className="p-2 border border-gray-300 rounded" />
                         <input type="text" name="valor" value={newLancamento.valor} placeholder="Valor" onChange={handleNewLancamentoChange} className="p-2 border border-gray-300 rounded" />
