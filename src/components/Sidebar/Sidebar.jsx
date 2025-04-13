@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { FaGlobe, FaCalendarAlt, FaUsers, FaCog, FaSignOutAlt } from 'react-icons/fa';
 import { BiSolidInstitution, BiSpreadsheet } from "react-icons/bi";
 import { AiOutlineDollar } from "react-icons/ai";
@@ -6,12 +6,33 @@ import profilepicture from "../../assets/profilepicture.jpg";
 
 const Sidebar = ({ onToggle }) => {
     const [isOpen, setIsOpen] = useState(true);
+    const [usuario, setUsuario] = useState(null);
+    const [isLoading, setIsLoading] = useState(true); // Estado para verificar se os dados estão sendo carregados
 
     const toggleSidebar = () => {
         const newIsOpen = !isOpen;
         setIsOpen(newIsOpen);
         onToggle(newIsOpen); // Comunica a mudança para o Layout
     };
+
+    useEffect(() => {
+        const usuarioSalvo = localStorage.getItem('usuarioLogado');
+        if (usuarioSalvo) {
+            setUsuario(JSON.parse(usuarioSalvo));
+        }
+        setIsLoading(false)
+    }, []);
+
+    const cargosMap = {
+        coordenacao: 'Coordenação',
+        usuario: 'Usuário'
+    };
+    
+    const formatarCargo = (cargo) => cargosMap[cargo] || cargo;
+
+    if (isLoading) {
+        return <div>Loading...</div>;
+    }
 
     return (
         <div className={`fixed top-0 left-0 h-full ${isOpen ? 'w-45 md:w-60' : 'w-14'} bg-cor-tema1 p-4 transition-all duration-500 ease-in-out`}>
@@ -73,8 +94,8 @@ const Sidebar = ({ onToggle }) => {
                 <div className="flex items-center">
                     <img src={profilepicture} alt="Profile" className="h-10 w-10 rounded-full object-cover" />
                     <div className={`ml-4 hidden ${isOpen ? 'md:inline' : 'hidden'}`}>
-                        <div className="text-white">Nome Usuário</div>
-                        <div className="text-white text-sm">Cargo Usuário</div>
+                        <div className="text-white">{usuario.username}</div>
+                        <div className="text-white text-sm">{formatarCargo(usuario.cargo)}</div>
                     </div>
                     <FaSignOutAlt className="ml-auto text-2xl text-white cursor-pointer hover:text-cor-destaque1" />
                 </div>
