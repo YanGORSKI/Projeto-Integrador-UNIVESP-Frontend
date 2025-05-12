@@ -6,6 +6,7 @@ import Home from "./pages/Home";
 import Financeiro from "./pages/Financeiro/Financeiro";
 import FluxoCaixaDemonstrativo from "./pages/Financeiro/FluxoCaixa/Demonstrativo";
 import FluxoCaixaLancamentos from "./pages/Financeiro/FluxoCaixa/Lancamentos";
+import Calendar from "./pages/Calendar/Calendar";
 import Login from "./pages/Login";
 
 function App() {
@@ -29,6 +30,7 @@ function App() {
                         <Route path="/financeiro" element={<Financeiro />} />
                         <Route path="/financeiro/fluxo-caixa/demonstrativo" element={<FluxoCaixaDemonstrativo />} />
                         <Route path="/financeiro/fluxo-caixa/lancamentos" element={<FluxoCaixaLancamentos />} />
+                        <Route path="/calendar" element={<Calendar />} />
                     </Routes>
                 </Layout>
             ) : (
